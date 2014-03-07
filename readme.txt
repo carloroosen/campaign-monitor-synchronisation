@@ -3,7 +3,7 @@ Contributors: carloroosen, pilotessa
 Donate link:
 Tags: Campaign Monitor, user management, mailing list
 Requires at least: 3.0.1
-Tested up to: 3.6.1
+Tested up to: 3.8.1
 Stable tag: 1.0.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -57,3 +57,7 @@ When a user unsubscribes on the Campaign Monitor website, this will not be overw
 * Send multiple batches when batch size >1000
 = 1.0.2 =
 * Solve a conflict with other plugins using the CampaingMonitor API.
+= 1.0.3 =
+* Several fixes.
+= 1.0.4 =
+* Solve more conflicts with other plugins using the CampaingMonitor API.
