@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Campaign Monitor Synchronization
-Version: 1.0.4
+Version: 1.0.5
 Author: Carlo Roosen, Elena Mukhina
 Author URI: http://www.carloroosen.com/
 Plugin URI: http://www.carloroosen.com/campaign-monitor-synchronisation/
