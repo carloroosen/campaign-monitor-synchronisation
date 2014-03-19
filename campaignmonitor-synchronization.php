@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Campaign Monitor Synchronization
-Version: 1.0.5
+Version: 1.0.6
 Author: Carlo Roosen, Elena Mukhina
 Author URI: http://www.carloroosen.com/
 Plugin URI: http://www.carloroosen.com/campaign-monitor-synchronisation/
@@ -45,7 +45,11 @@ function cms_plugin_menu() {
 		}
 		
 		if ( $_SERVER[ 'REQUEST_METHOD' ] == 'POST' ) {
-			update_option( 'cms_user_fields', base64_encode( serialize( ( array ) $_POST[ 'cms_user_fields' ] ) ) );
+			if ( isset( $_POST[ 'cms_user_fields' ] ) ) {
+				update_option( 'cms_user_fields', base64_encode( serialize( ( array ) $_POST[ 'cms_user_fields' ] ) ) );
+			} else {
+				update_option( 'cms_user_fields', base64_encode( serialize( array() ) ) );
+			}
 			update_option( 'cms_api_key', $_POST[ 'cms_api_key' ] );
 			update_option( 'cms_list_id', $_POST[ 'cms_list_id' ] );
 			

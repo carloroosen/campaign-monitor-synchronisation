@@ -79,7 +79,7 @@ class CMS_Synchronizer {
 			while ( count( $result->response->Results ) ) {
 				if ( ! empty( $result->response->Results ) && is_array( $result->response->Results ) ) {
 					foreach( $result->response->Results as $key => $subscriber ) {
-						$user = get_user_by_email( $subscriber->EmailAddress );
+						$user = get_user_by( 'email', $subscriber->EmailAddress );
 
 						if ( ! $user ) {
 							$result = $wrap_s->delete( $subscriber->EmailAddress );
@@ -164,27 +164,29 @@ class CMS_Synchronizer {
 			foreach( $missing_users as $key => $user_email ) {
 				if ( ! in_array( $user_email, $unsubscribed ) && ! in_array( $user_email, $bounced ) ) {
 					// Subscriber does not exist, let's add him
-					$user = get_user_by_email( $user_email );
+					$user = get_user_by( 'email', $user_email );
 
-					$args = array(
-						'EmailAddress' => $user->user_email,
-						'Name' => $user->first_name . ' ' . $user->last_name,
-						'CustomFields' => array(
-						)
-					);
+					if ( $user ) {
+						$args = array(
+							'EmailAddress' => $user->user_email,
+							'Name' => $user->first_name . ' ' . $user->last_name,
+							'CustomFields' => array(
+							)
+						);
 
-					foreach( $cms_user_fields as $key => $field ) {
-						if ( ! in_array( $field, $cms_fields_to_hide ) ) {
-							// We export scalar values only
-							if ( is_scalar( get_user_meta( $user->ID, $field, true ) ) ) {
-								$args[ 'CustomFields' ][] = array( 'Key' => $field, 'Value' => get_user_meta( $user->ID, $field, true ) );
-							} else {
-								$args[ 'CustomFields' ][] = array( 'Key' => $field, 'Value' => '' );
+						foreach( $cms_user_fields as $key => $field ) {
+							if ( ! in_array( $field, $cms_fields_to_hide ) ) {
+								// We export scalar values only
+								if ( is_scalar( get_user_meta( $user->ID, $field, true ) ) ) {
+									$args[ 'CustomFields' ][] = array( 'Key' => $field, 'Value' => get_user_meta( $user->ID, $field, true ) );
+								} else {
+									$args[ 'CustomFields' ][] = array( 'Key' => $field, 'Value' => '' );
+								}
 							}
 						}
-					}
 					
-					$subscribers[] = $args;
+						$subscribers[] = $args;
+					}
 				}
 			}
 
