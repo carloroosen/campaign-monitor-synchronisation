@@ -193,7 +193,7 @@ class CMS_Synchronizer {
 			while ( count( $subscribers ) ) {
 				$subscribers1000 = array();
 				for ( $i = 0; $i < 1000; $i++ ) {
-					$subscribers1000 = array_shift( $subscribers );
+					$subscribers1000[] = array_shift( $subscribers );
 					if ( ! count( $subscribers ) ) {
 						break;
 					}
