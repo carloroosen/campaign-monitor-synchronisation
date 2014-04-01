@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Campaign Monitor Synchronization
-Description: Caution, this plugin has been renamed. You need to de-install the plugin, remove the files and install the plugin under its new name 'campaign-monitor-synchronization'
+Description: This plugin automatically creates and maintains a mailinglist on Campaign Monitor mirroring the list of WordPress users. 
 Version: 1.0.8
 Author: Carlo Roosen, Elena Mukhina
 Author URI: http://www.carloroosen.com/
