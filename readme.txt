@@ -70,3 +70,5 @@ When a user unsubscribes on the Campaign Monitor website, this will not be overw
 * Fix subscribers import bug.
 = 1.0.8 =
 * No fixes, just SVN troubles.
+= 1.0.9 =
+* More detailed error output.
