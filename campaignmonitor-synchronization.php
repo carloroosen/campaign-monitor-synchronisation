@@ -39,41 +39,12 @@ require_once CMS_PLUGIN_PATH . 'classes/CMS_Synchronizer.php';
 
 function cms_activation() {
 	wp_schedule_event( time(), 'quarter_hour', 'cms_cron_update' );
-
-	if ( ! class_exists( 'CS_REST_Lists' ) ) {
-		require_once CMS_PLUGIN_PATH . 'campaignmonitor-createsend-php/csrest_lists.php';
-	}
-
-	$auth = array( 'api_key' => get_option( 'cms_api_key' ) );
-	$wrap_l = new CS_REST_Lists( get_option( 'cms_list_id' ), $auth );
-
-	// Create the webhook if needed
-	$c = true;
-	$result = $wrap_l->get_webhooks();
-	if ( ! $result->was_successful() ) {
-		echo $result->response->Message;
-		die();
-	}
-
-	foreach( $result->response as $hook ) {
-		if ( $hook->Url == admin_url( 'admin-ajax.php?action=cms-cm-sync' ) ) {
-			$c = false;
-			break;
-		}
-	}
-
-	if ( $c ) {
-		$result = $wrap_l->create_webhook( array(
-			'Events' => array( CS_REST_LIST_WEBHOOK_SUBSCRIBE, CS_REST_LIST_WEBHOOK_DEACTIVATE ),
-			'Url' => admin_url( 'admin-ajax.php?action=cms-cm-sync' ),
-			'PayloadFormat' => CS_REST_WEBHOOK_FORMAT_JSON
-		) );
-	}
 }
 
 function cms_deactivation() {
 	wp_clear_scheduled_hook( 'cms_cron_update' );
 
+	// Remove the webhook if needed
 	if ( ! class_exists( 'CS_REST_Lists' ) ) {
 		require_once CMS_PLUGIN_PATH . 'campaignmonitor-createsend-php/csrest_lists.php';
 	}
@@ -110,7 +81,37 @@ function cms_plugin_menu() {
 			}
 			update_option( 'cms_api_key', $_POST[ 'cms_api_key' ] );
 			update_option( 'cms_list_id', $_POST[ 'cms_list_id' ] );
-			
+
+			// Create the webhook if needed
+			if ( ! class_exists( 'CS_REST_Lists' ) ) {
+				require_once CMS_PLUGIN_PATH . 'campaignmonitor-createsend-php/csrest_lists.php';
+			}
+
+			$auth = array( 'api_key' => get_option( 'cms_api_key' ) );
+			$wrap_l = new CS_REST_Lists( get_option( 'cms_list_id' ), $auth );
+
+			$c = true;
+			$result = $wrap_l->get_webhooks();
+			if ( ! $result->was_successful() ) {
+				wp_redirect( home_url( '/wp-admin/plugins.php?page=campaignmonitor-sync&error=' . urlencode( $result->response->Message . ( ! empty( $result->response->ResultData ) ? '<br />Error details: ' . json_encode( $result->response->ResultData ) : '' ) ) ) );
+				die();
+			}
+
+			foreach( $result->response as $hook ) {
+				if ( $hook->Url == admin_url( 'admin-ajax.php?action=cms-cm-sync' ) ) {
+					$c = false;
+					break;
+				}
+			}
+
+			if ( $c ) {
+				$result = $wrap_l->create_webhook( array(
+					'Events' => array( CS_REST_LIST_WEBHOOK_SUBSCRIBE, CS_REST_LIST_WEBHOOK_DEACTIVATE ),
+					'Url' => admin_url( 'admin-ajax.php?action=cms-cm-sync' ),
+					'PayloadFormat' => CS_REST_WEBHOOK_FORMAT_JSON
+				) );
+			}
+
 			// Make forced sync
 			update_option( 'cms_update', 1 );
 			$result = CMS_Synchronizer::cms_update();
