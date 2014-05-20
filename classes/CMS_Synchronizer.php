@@ -87,6 +87,15 @@ class CMS_Synchronizer {
 							return false;
 						}
 					} else {
+						// Unsubscribe if needed
+						if ( get_user_meta( $user->ID, 'cms-subscribe-for-newsletter', true ) === "0" ) {
+							$result_tmp = $wrap_s->unsubscribe( $user->user_email );
+							if ( ! $result_tmp->was_successful() ) {
+								self::$error = $result_tmp->response;
+								return false;
+							}
+						}
+
 						$args = array();
 						
 						if ( trim( $user->first_name . ' ' . $user->last_name ) != trim( $subscriber->Name ) ) {
@@ -114,15 +123,6 @@ class CMS_Synchronizer {
 						
 						if ( count( $args ) ) {
 							$result_tmp = $wrap_s->update( $user->user_email, $args );
-							if ( ! $result_tmp->was_successful() ) {
-								self::$error = $result_tmp->response;
-								return false;
-							}
-						}
-						
-						// Unsubscribe if needed
-						if ( get_user_meta( $user->ID, 'cms-subscribe-for-newsletter', true ) === "0" ) {
-							$result_tmp = $wrap_s->unsubscribe( $user->user_email );
 							if ( ! $result_tmp->was_successful() ) {
 								self::$error = $result_tmp->response;
 								return false;
@@ -191,7 +191,7 @@ class CMS_Synchronizer {
 						}
 						
 						// Resubscribe if needed
-						if ( get_user_meta( $user->ID, 'cms-subscribe-for-newsletter', true ) === "0" ) {
+						if ( get_user_meta( $user->ID, 'cms-subscribe-for-newsletter', true ) !== "0" ) {
 							$args[ 'Resubscribe' ] = true;
 						}
 
