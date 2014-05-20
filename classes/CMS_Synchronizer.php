@@ -7,8 +7,6 @@ class CMS_Synchronizer {
 		global $cms_fields_to_hide;
 		
 		if ( get_option( 'cms_update' ) ) {
-			set_time_limit ( 3600 );
-			
 			$cms_user_fields = ( array ) unserialize( base64_decode( get_option( 'cms_user_fields' ) ) );
 			
 			if ( ! class_exists( 'CS_REST_Lists' ) ) {
@@ -78,18 +76,18 @@ class CMS_Synchronizer {
 			$i = 2;
 			while ( count( $result->response->Results ) ) {
 				foreach( $result->response->Results as $key => $subscriber ) {
+					set_time_limit ( 60 );
+					
 					$user = get_user_by( 'email', $subscriber->EmailAddress );
 
 					if ( ! $user ) {
-						$result = $wrap_s->delete( $subscriber->EmailAddress );
-						if ( ! $result->was_successful() ) {
-							self::$error = $result->response;
+						$result_tmp = $wrap_s->delete( $subscriber->EmailAddress );
+						if ( ! $result_tmp->was_successful() ) {
+							self::$error = $result_tmp->response;
 							return false;
 						}
 					} else {
-						$args = array(
-							'Resubscribe' => true
-						);
+						$args = array();
 						
 						if ( trim( $user->first_name . ' ' . $user->last_name ) != trim( $subscriber->Name ) ) {
 							$args[ 'Name' ] = $user->first_name . ' ' . $user->last_name;
@@ -115,17 +113,18 @@ class CMS_Synchronizer {
 						}
 						
 						if ( count( $args ) ) {
-							$result = $wrap_s->update( $user->user_email, $args );
-							if ( ! $result->was_successful() ) {
-								self::$error = $result->response;
+							$result_tmp = $wrap_s->update( $user->user_email, $args );
+							if ( ! $result_tmp->was_successful() ) {
+								self::$error = $result_tmp->response;
 								return false;
 							}
 						}
 						
+						// Unsubscribe if needed
 						if ( get_user_meta( $user->ID, 'cms-subscribe-for-newsletter', true ) === "0" ) {
-							$result = $wrap_s->unsubscribe( $user->user_email );
-							if ( ! $result->was_successful() ) {
-								self::$error = $result->response;
+							$result_tmp = $wrap_s->unsubscribe( $user->user_email );
+							if ( ! $result_tmp->was_successful() ) {
+								self::$error = $result_tmp->response;
 								return false;
 							}
 						}
@@ -155,18 +154,18 @@ class CMS_Synchronizer {
 			$i = 2;
 			while ( count( $result->response->Results ) ) {
 				foreach( $result->response->Results as $key => $subscriber ) {
+					set_time_limit ( 60 );
+					
 					$user = get_user_by( 'email', $subscriber->EmailAddress );
 
 					if ( ! $user ) {
-						$result = $wrap_s->delete( $subscriber->EmailAddress );
-						if ( ! $result->was_successful() ) {
-							self::$error = $result->response;
+						$result_tmp = $wrap_s->delete( $subscriber->EmailAddress );
+						if ( ! $result_tmp->was_successful() ) {
+							self::$error = $result_tmp->response;
 							return false;
 						}
 					} else {
-						$args = array(
-							'Resubscribe' => true
-						);
+						$args = array();
 						
 						if ( trim( $user->first_name . ' ' . $user->last_name ) != trim( $subscriber->Name ) ) {
 							$args[ 'Name' ] = $user->first_name . ' ' . $user->last_name;
@@ -191,18 +190,15 @@ class CMS_Synchronizer {
 							}
 						}
 						
-						if ( count( $args ) ) {
-							$result = $wrap_s->update( $user->user_email, $args );
-							if ( ! $result->was_successful() ) {
-								self::$error = $result->response;
-								return false;
-							}
-						}
-						
+						// Resubscribe if needed
 						if ( get_user_meta( $user->ID, 'cms-subscribe-for-newsletter', true ) === "0" ) {
-							$result = $wrap_s->unsubscribe( $user->user_email );
-							if ( ! $result->was_successful() ) {
-								self::$error = $result->response;
+							$args[ 'Resubscribe' ] = true;
+						}
+
+						if ( count( $args ) ) {
+							$result_tmp = $wrap_s->update( $user->user_email, $args );
+							if ( ! $result_tmp->was_successful() ) {
+								self::$error = $result_tmp->response;
 								return false;
 							}
 						}
@@ -279,6 +275,8 @@ class CMS_Synchronizer {
 			}
 
 			while ( count( $subscribers ) ) {
+				set_time_limit ( 60 );
+				
 				$subscribers1000 = array();
 				for ( $i = 0; $i < 1000; $i++ ) {
 					$subscribers1000[] = array_shift( $subscribers );
